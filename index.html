@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess Caesar's Cipher Shift</title>
+
+    <style>
+      body {
+        font-family: monospace;
+        background-color: #77ecad;
+      }
+
+      .main {
+        display: grid;
+        justify-content: center;
+        justify-items: center;
+      }
+
+      .main img {
+        width: 100px;
+      }
+
+      .main h1 {
+        font-size: 48px;
+        margin: 20px;
+        text-align: center;
+      }
+
+      .main form {
+        display: grid;
+        grid-template-columns: 1fr 120px;
+        width: 100%;
+      }
+
+      .main form * {
+        padding: 10px;
+        margin: 10px;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 18px;
+        border: 3px solid black;
+        border-radius: 10px;
+      }
+
+      #guessButton,
+      #shiftButton {
+        background-color: #b2deff;
+        cursor: pointer;
+      }
+
+      .main p {
+        font-size: 20px;
+        line-height: 40px;
+        width: -webkit-fill-available;
+        text-align: center;
+      }
+
+      #originalWord,
+      #shiftedWord,
+      #results {
+        max-height: 225px;
+        overflow: auto;
+        background-color: hsl(0deg 0% 100% / 44%);
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <img src="./images/logo.png" />
+      <h1>Guess Caesar's Cipher Shift</h1>
+
+      <form onsubmit="return false">
+        <input placeholder="Enter a word" id="wordField" type="text" />
+        <input type="submit" value="Shift" id="shiftButton" />
+      </form>
+
+      <p id="originalWord"></p>
+      <p id="shiftedWord"></p>
+
+      <form onsubmit="return false">
+        <input
+          placeholder="Guess the shift value"
+          inputmode="decimal"
+          id="guessField"
+          type="number"
+        />
+        <input type="submit" value="Guess" id="guessButton" />
+      </form>
+
+      <p id="results"></p>
+    </div>
+
+    <script>
+      let shiftValue;
+      let guessButtonEnabled = true;
+
+      let wordField = document.querySelector("#wordField");
+      let shiftButton = document.querySelector("#shiftButton");
+      let originalWordElement = document.querySelector("#originalWord");
+      let shiftedWordElement = document.querySelector("#shiftedWord");
+      let guessField = document.querySelector("#guessField");
+      let guessButton = document.querySelector("#guessButton");
+      let results = document.querySelector("#results");
+
+      shiftButton.addEventListener("click", shiftWord, false);
+      guessButton.addEventListener("click", checkGuess, false);
+
+      function caesarShift(word, shift) {
+        return word
+          .split("")
+          .map((letter) => {
+            const letterCode = letter.charCodeAt(0);
+            if (letterCode >= 65 && letterCode <= 90) {
+              return String.fromCharCode(((letterCode - 65 + shift) % 26) + 65);
+            } else if (letterCode >= 97 && letterCode <= 122) {
+              return String.fromCharCode(((letterCode - 97 + shift) % 26) + 97);
+            } else {
+              return letter;
+            }
+          })
+          .join("");
+      }
+
+      function shiftWord(event) {
+        originalWordElement.textContent = "";
+        shiftedWordElement.textContent = "";
+        results.textContent = "";
+        guessField.value = "";
+
+        const word = wordField.value.toUpperCase();
+        originalWordElement.textContent = `Original word: ${word}`;
+        shiftValue = Math.floor(Math.random() * 26) + 1;
+        const shiftedWord = caesarShift(word, shiftValue);
+        shiftedWordElement.textContent = `Shifted word: ${shiftedWord}`;
+        wordField.value = "";
+        guessButton.disabled = false;
+        guessButtonEnabled = true;
+      }
+
+      function checkGuess(event) {
+        if (!guessButtonEnabled) return;
+        let enteredGuess = parseInt(guessField.value);
+        guessField.value = "";
+
+        if (enteredGuess === shiftValue) {
+          let message = `<p>----- New Game Time -----<p>
+                       <p>🎉 Your guess of ${enteredGuess} is <b>correct</b>!</p>
+                       <p>-------------------------<p>`;
+
+          results.insertAdjacentHTML("afterbegin", message);
+          guessButton.disabled = true;
+          guessButtonEnabled = false;
+        } else {
+          if (enteredGuess < shiftValue) {
+            let message = `<p>⚓ Your guess of ${enteredGuess} is <b>too low</b>!</p>`;
+
+            results.insertAdjacentHTML("afterbegin", message);
+          }
+
+          if (enteredGuess > shiftValue) {
+            let message = `<p>🎈 Your guess of ${enteredGuess} is <b>too high</b>!</p>`;
+
+            results.insertAdjacentHTML("afterbegin", message);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
